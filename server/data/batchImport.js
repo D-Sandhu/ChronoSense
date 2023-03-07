@@ -1,7 +1,7 @@
 // Array of product objects
-const products = require("../data/products.json");
+const products = require("./products.json");
 // Array of company object
-const companies = require("../data/companies.json");
+const companies = require("./companies.json");
 
 const { MongoClient } = require("mongodb");
 
