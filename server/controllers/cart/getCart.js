@@ -14,16 +14,16 @@ const getCart = async (req, res) => {
     const db = client.db(DB_NAME);
 
     // grab the shopping cart in the database
-    const { cart } = await db.collection("cart").findOne();
+    const { cartItems } = await db.collection("cart").findOne();
 
     // if there is no cart, create one and send an empty cart response
-    if (!cart) {
-      await db.collection("cart").insertOne({ cart: [] });
-      return res.status(200).json({ status: 200, cart: [] });
+    if (!cartItems) {
+      await db.collection("cart").insertOne({ cartItems: [] });
+      return res.status(200).json({ status: 200, cartItems: [] });
     }
 
     // if there is a cart, send it in the response
-    return res.status(200).json({ status: 200, cart });
+    return res.status(200).json({ status: 200, cartItems });
   } catch (err) {
     console.error(err);
 

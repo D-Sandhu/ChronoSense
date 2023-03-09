@@ -87,7 +87,7 @@ const batchImport = async () => {
     // create a collection called "cart" with a document with a single array for the cart
     // For this simple application we will assume there is only 1 user
     await db.collection("cart").insertOne({
-      cart: [],
+      cartItems: [],
     });
     // create a collection called "orders"
     await db.createCollection("orders");
