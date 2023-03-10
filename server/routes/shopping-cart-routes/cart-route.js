@@ -11,11 +11,20 @@ const {
   handleValidationErrors,
 } = require("../../validation/handle-validation-errors");
 
-const { addCartItemValidation } = require("../../validation/cart-validation");
+const {
+  itemIdValidation,
+  itemQuantityValidation,
+} = require("../../validation/cart-validation");
 
 router.get("/", getCart);
 
-router.post("/", addCartItemValidation, handleValidationErrors, addCartItem);
+router.post(
+  "/",
+  itemIdValidation,
+  itemQuantityValidation,
+  handleValidationErrors,
+  addCartItem
+);
 
 router.patch("/:_id", updateItemQuantity);
 

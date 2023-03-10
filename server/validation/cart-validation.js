@@ -1,34 +1,32 @@
-const { body } = require("express-validator");
+const { param, body } = require("express-validator");
 
-// Validation chain for adding a cart item
-const addCartItemValidation = [
-  // Check if required fields exist
-  body("_id").exists().withMessage("Missing _id field"),
-  body("name").exists().withMessage("Missing name field"),
-  body("price").exists().withMessage("Missing price field"),
-  body("numInStock").exists().withMessage("Missing numInStock field"),
-  body("imageSrc").exists().withMessage("Missing imageSrc field"),
-  body("quantity").exists().withMessage("Missing quantity field"),
+const itemIdValidation = [
+  // Check if _id exists in URL path
+  param("_id")
+  .exists()
+  .withMessage("Please provide an _id parameter"),
 
-  // Parse data to correct format
-  body("_id").toInt(),
-  body("price").toFloat(),
-  body("numInStock").toInt(),
-  body("quantity").toInt(),
+  // Parse the _id to correct format
+  param("_id").toInt(),
 
-  // Check if parsed values are valid numbers
-  body("_id").isInt({ min: 1 }).withMessage("_id must be a positive integer"),
-  body("price")
-    .isFloat({ min: 1 })
-    .withMessage("price must be a positive number"),
-  body("numInStock")
-    .isInt({ min: 1 })
-    .withMessage("numInStock must be a positive integer"),
+  // Check if parsed _id value is a valid number
+  param("_id")
+  .isInt({ min: 1 })
+  .withMessage("_id must be a positive integer"),
+];
+
+const itemQuantityValidation = [
+  // Check if required field exists
+  body("quantity")
+  .exists()
+  .withMessage("Missing quantity field"),
+
+  // Check if quantity is a valid value
   body("quantity")
     .isInt({ min: 1 })
     .withMessage("quantity must be a positive integer"),
-  // Check if name and imageSrc are strings
-  body(["name", "imageSrc"]).isString().trim(),
 ];
 
-module.exports = { addCartItemValidation };
+
+module.exports = { itemIdValidation, itemQuantityValidation };
+
