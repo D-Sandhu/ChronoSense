@@ -23,14 +23,27 @@ const checkAddCartItemFields = (req, res, next) => {
       });
   }
 
-  // Parse data to correct format
-  req.body._id = parseInt(_id);
-  req.body.price = parseFloat(price);
-  req.body.numInStock = parseInt(numInStock);
-  req.body.quantity = parseInt(quantity);
+// Parse data to correct format
+req.body._id = parseInt(_id);
+req.body.price = parseFloat(price);
+req.body.numInStock = parseInt(numInStock);
+req.body.quantity = parseInt(quantity);
 
-  // Move to the next middleware function
-  next();
+// Check if any parsed value is not a number
+const invalidFields = Object.keys(req.body).filter(
+  (field) => isNaN(req.body[field])
+);
+
+// Return an error response if any parsed value is not a number
+if (invalidFields.length > 0) {
+  return res.status(400).json({
+    status: 400,
+    message: `Invalid fields: ${invalidFields.join(", ")}`,
+  });
+}
+
+// Move to the next middleware function
+next();
 };
 
 module.exports = { checkAddCartItemFields };
