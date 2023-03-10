@@ -1,15 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
+const { getCart, addCartItem } = require("../../controllers/cartController");
+
 const {
-  getCart,
-  addCartItem,
-  checkAddCartItemFields,
-} = require("../../controllers/cartController");
+  handleValidationErrors,
+} = require("../../validation/handleValidationErrors");
+
+const { addCartItemValidation } = require("../../validation/cartValidation");
 
 router.get("/", getCart);
 
-router.post("/", checkAddCartItemFields, addCartItem);
+router.post("/", addCartItemValidation, handleValidationErrors, addCartItem);
 
 // router.patch("/:_id");
 
