@@ -6,8 +6,10 @@ const {
 } = require("../../config/database");
 
 const addCartItem = async (req, res) => {
-  // Deconstruct the request body
-  const { _id, name, price, numInStock, imageSrc, quantity } = req.body;
+  // Destructure the request params
+  const { productId } = req.params;
+  // Destructure the request body
+  const { quantity } = req.body;
 
   try {
     // connect to the database
@@ -16,59 +18,111 @@ const addCartItem = async (req, res) => {
     // select the database
     const db = client.db(DB_NAME);
 
-    // step 1: find the product in the "products" collection and decrement numInStock by the quantity
-    const { modifiedCount } = await db
+    /* 
+    Things to check for with product productId
+    1- does the product exist
+    2- is there enough stock to add the given quantity
+    */
+
+    // find the product by its productId in the products collection
+    const product = await db.collection("products").findOne({ _id: productId });
+
+    // check if the product exists
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // check if there is enough stock to add the given quantity
+    if (product.numInStock < quantity) {
+      return res.status(400).json({ message: "Not enough stock" });
+    }
+
+    // update numInStock for that product in products collection by subtracting quantity
+    await db
       .collection("products")
-      .updateOne({ _id }, { $inc: { numInStock: -quantity } });
-    // if the item is not found, send an error with a message
-    if (modifiedCount === 0) {
-      return res.status(404).json({
-        status: 404,
-        message: "Product not found",
+      .updateOne({ _id: productId }, { $inc: { numInStock: -quantity } });
+
+    /*
+    Steps to add cart item to cart
+    1- grab the cartItems from the cart collection (findOne)
+    2- check if the item to add exists in the cartItems[] (using productId)
+    3- if it exists then use findOneAndUpdate to increment ($inc) the quantity and set ($set) the new numInStock (use returnOriginal: false to grab the updated cart)
+    4- if it doesn't exist then push ($push) the cart item to add into the cartItems[]
+    5- send the updated cart to the client
+    */
+
+    // destructure what we need from the product to use
+    const { name, price, numInStock, imageSrc } = product;
+
+    const newNumInStock = numInStock - quantity;
+
+    const itemToAdd = {
+      _id: productId,
+      name,
+      price,
+      numInStock: newNumInStock,
+      quantity,
+      imageSrc,
+    };
+
+    // grab the cart
+    const { cartItems } = await db.collection("cart").findOne({});
+
+    // if there are no cartItems (indicative of some error) then create a document and add a cartItems[] with the item
+    if (!cartItems) {
+      await db.collection("cart").insertOne({
+        cartItems: [itemToAdd],
       });
     }
 
-    // step 2: increment the numInStock of and quantity of the item and use modifiedCount to check if it's already in the cart
-    const { modifiedCount: cartModifiedCount } = await db
-      .collection("cart")
-      .updateOne(
-        { "cartItems._id": _id },
-        {
-          $inc: {
-            "cartItems.$.numInStock": -quantity,
-            "cartItems.$.quantity": quantity,
-          },
-        }
-      );
+    // check if the item to add exists in the cartItems[]
+    const itemIsInCart = cartItems.some((item) => item._id === productId);
 
-    // Check to see if item existed in cart by checking if anything was modified in the last operation
-    if (cartModifiedCount === 0) {
-      // If the item did not exist in the cart, add it
-      await db.collection("cart").updateOne(
+    let updatedCart;
+
+    if (itemIsInCart) {
+      updatedCart = await db.collection("cart").findOneAndUpdate(
         {},
         {
-          $push: {
-            cartItems: {
-              _id,
-              name,
-              price,
-              numInStock: numInStock - quantity,
-              quantity,
-              imageSrc,
-            },
-          },
+          $inc: { "cartItems.$[element].quantity": quantity }, // increment quantity by how much we are adding
+          $set: { "cartItems.$[element].numInStock": newNumInStock }, // set numInStock to new value
+        },
+        {
+          arrayFilters: [{ "element._id": productId }], // specify which element to update
+          returnDocument: "after", // return the updated document
+        }
+      );
+    } else {
+      updatedCart = await db.collection("cart").findOneAndUpdate(
+        {},
+        {
+          $push: { cartItems: itemToAdd },
+        },
+        {
+          returnDocument: "after",
         }
       );
     }
 
-    // Find the shopping cart in the database
-    const { cartItems } = await db.collection("cart").findOne();
+    // destructure cartItems from updatedCart
+    const {
+      value: { cartItems: newCart },
+    } = updatedCart;
 
-    // Send the shopping cart in the response
-    res
-      .status(200)
-      .json({ status: 200, cartItems, message: "Item added to cart!" });
+    // send response to client
+    res.status(200).json({
+      status: 200,
+      message: "Item added to cart",
+      cartItems: newCart,
+    });
   } catch (err) {
+    console.error(err);
+
+    // Send a 500 Internal Server Error response
+    res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+    });
   } finally {
     // always disconnect from the database
     await disconnect();
