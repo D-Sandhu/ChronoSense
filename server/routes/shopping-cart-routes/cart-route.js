@@ -4,7 +4,7 @@ const router = express.Router();
 const {
   getCart,
   addCartItem,
-  // updateItemQuantity,
+  updateItemQuantity,
 } = require("../../controllers/cart-controller");
 
 const {
@@ -26,7 +26,13 @@ router.post(
   addCartItem
 );
 
-// router.patch("/:_id", updateItemQuantity);
+router.patch(
+  "/:productId",
+  itemIdValidation,
+  itemQuantityValidation,
+  handleValidationErrors,
+  updateItemQuantity
+);
 
 // router.delete("/:_id");
 
