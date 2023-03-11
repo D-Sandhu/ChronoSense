@@ -2,17 +2,17 @@ const { param, body } = require("express-validator");
 
 const itemIdValidation = [
   // Check if _id exists in URL path
-  param("_id")
+  param("productId")
   .exists()
-  .withMessage("Please provide an _id parameter"),
+  .withMessage("Please provide a productId parameter in the URL path"),
 
   // Parse the _id to correct format
-  param("_id").toInt(),
+  param("productId").toInt(),
 
   // Check if parsed _id value is a valid number
-  param("_id")
+  param("productId")
   .isInt({ min: 1 })
-  .withMessage("_id must be a positive integer"),
+  .withMessage("productId must be a positive integer"),
 ];
 
 const itemQuantityValidation = [
