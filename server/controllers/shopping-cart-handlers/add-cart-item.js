@@ -76,11 +76,11 @@ const addCartItem = async (req, res) => {
     }
 
     // check if the item to add exists in the cartItems[]
-    const itemIsInCart = cartItems.some((item) => item._id === productId);
+    const isItemInCart = cartItems.some((item) => item._id === productId);
 
     let updatedCart;
 
-    if (itemIsInCart) {
+    if (isItemInCart) {
       updatedCart = await db.collection("cart").findOneAndUpdate(
         {},
         {
