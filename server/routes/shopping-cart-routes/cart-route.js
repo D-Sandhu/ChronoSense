@@ -6,6 +6,7 @@ const {
   addCartItem,
   updateItemQuantity,
   removeCartItem,
+  clearCart,
 } = require("../../controllers/cart-controller");
 
 const {
@@ -42,6 +43,6 @@ router.delete(
   removeCartItem
 );
 
-// router.delete("/");
+router.delete("/", clearCart);
 
 module.exports = router;
