@@ -5,6 +5,7 @@ const {
   getCart,
   addCartItem,
   updateItemQuantity,
+  removeCartItem,
 } = require("../../controllers/cart-controller");
 
 const {
@@ -34,7 +35,12 @@ router.patch(
   updateItemQuantity
 );
 
-// router.delete("/:_id");
+router.delete(
+  "/:productId",
+  itemIdValidation,
+  handleValidationErrors,
+  removeCartItem
+);
 
 // router.delete("/");
 
