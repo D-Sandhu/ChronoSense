@@ -4,7 +4,8 @@ const morgan = require("morgan");
 
 const PORT = 8000;
 
-const shoppingCartRouter = require("./routes/shopping-cart-routes/cart-route")
+const shoppingCartRouter = require("./routes/shopping-cart-routes/cart-route");
+const productsRouter = require("./routes/products-route");
 
 express()
   .use(express.json())
@@ -14,8 +15,11 @@ express()
   // Mount the shopping cart router
   .use("/cart", shoppingCartRouter)
 
+  // Mount the products router
+  .use("/products", productsRouter)
+
   .get("/init", (req, res) => {
-    res.status(200).json({ status: 200, message: "init set up" })
+    res.status(200).json({ status: 200, message: "init set up" });
   })
 
   .listen(PORT, () => {
