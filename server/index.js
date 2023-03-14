@@ -13,14 +13,11 @@ express()
   .use(morgan("tiny"))
 
   // Mount the shopping cart router
-  .use("/cart", shoppingCartRouter)
+  .use("/api/cart", shoppingCartRouter)
 
   // Mount the products router
-  .use("/products", productsRouter)
+  .use("/api/products", productsRouter)
 
-  .get("/init", (req, res) => {
-    res.status(200).json({ status: 200, message: "init set up" });
-  })
 
   .listen(PORT, () => {
     console.log(`Listening on port ${PORT} ⚡`);
